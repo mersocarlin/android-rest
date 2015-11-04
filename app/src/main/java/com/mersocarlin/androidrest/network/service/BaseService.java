@@ -2,7 +2,9 @@ package com.mersocarlin.androidrest.network.service;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.inject.Inject;
 import com.mersocarlin.androidrest.R;
+import com.mersocarlin.androidrest.domain.helper.TokenInfoManager;
 import com.octo.android.robospice.retrofit.RetrofitGsonSpiceService;
 import com.squareup.okhttp.OkHttpClient;
 
@@ -14,10 +16,20 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
+import roboguice.RoboGuice;
 
 public class BaseService extends RetrofitGsonSpiceService {
 
     private final int TIME_OUT = 10;
+
+    @Inject
+    private TokenInfoManager tokenInfoManager;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        RoboGuice.getInjector(this.getApplicationContext()).injectMembers(this);
+    }
 
     @Override
     protected String getServerUrl() {
