@@ -11,6 +11,9 @@ import com.mersocarlin.androidrest.network.request.RefreshTokenRequest;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 
+import roboguice.inject.ContentView;
+
+@ContentView(R.layout.activity_splash)
 public class SplashActivity extends BaseActivity {
 
     @Inject
@@ -19,8 +22,7 @@ public class SplashActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
-
+        
         this.checkIfUserIsLoggedIn();
     }
 
