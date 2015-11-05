@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.inject.Inject;
 import com.mersocarlin.androidrest.R;
 import com.mersocarlin.androidrest.domain.helper.TokenInfoManager;
+import com.mersocarlin.androidrest.domain.model.TokenInfo;
 import com.octo.android.robospice.retrofit.RetrofitGsonSpiceService;
 import com.squareup.okhttp.OkHttpClient;
 
@@ -66,9 +67,11 @@ public class BaseService extends RetrofitGsonSpiceService {
     private RequestInterceptor requestInterceptor = new RequestInterceptor() {
         @Override
         public void intercept(RequestFacade request) {
-            final String accessToken = "";
+            TokenInfo tokenInfo = tokenInfoManager.getTokenInfo();
 
-            request.addHeader("Authorization", "Bearer " + accessToken);
+            if (tokenInfo != null) {
+                request.addHeader("Authorization", "Bearer " + tokenInfo.access_token);
+            }
 
 //            request.addQueryParam("client_id", "");
 //            request.addQueryParam("client_secret", "");

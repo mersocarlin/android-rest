@@ -1,5 +1,6 @@
 package com.mersocarlin.androidrest.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -12,9 +13,12 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.inject.Inject;
 import com.mersocarlin.androidrest.R;
+import com.mersocarlin.androidrest.domain.helper.TokenInfoManager;
 import com.mersocarlin.androidrest.domain.model.TokenInfo;
 import com.mersocarlin.androidrest.network.request.AuthRequest;
+import com.mersocarlin.androidrest.network.request.RefreshTokenRequest;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 
@@ -28,6 +32,9 @@ public class LoginActivity extends BaseActivity {
     @InjectView(R.id.username) private AutoCompleteTextView mUsernameView;
     @InjectView(R.id.password) private EditText mPasswordView;
     @InjectView(R.id.login_progress) private ProgressBar progressBar;
+
+    @Inject
+    private TokenInfoManager tokenInfoManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +58,36 @@ public class LoginActivity extends BaseActivity {
                 attemptLogin();
             }
         });
+
+        this.checkIfUserIsLoggedIn();
+    }
+
+    private void checkIfUserIsLoggedIn() {
+        TokenInfo tokenInfo = this.tokenInfoManager.getTokenInfo();
+
+        if (tokenInfo == null || tokenInfo.isEmpty()) {
+            return;
+        }
+
+        RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest(tokenInfo.refresh_token);
+
+        getManager().execute(refreshTokenRequest, new RequestListener<TokenInfo>() {
+            @Override
+            public void onRequestFailure(SpiceException spiceException) { }
+
+            @Override
+            public void onRequestSuccess(TokenInfo tokenInfo) {
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void attemptLogin() {
+        if (this.progressBar.getVisibility() == View.VISIBLE) {
+            return;
+        }
+
         this.textErrorMessage.setVisibility(View.INVISIBLE);
         this.mUsernameView.setError(null);
         this.mPasswordView.setError(null);
@@ -95,9 +129,10 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onRequestSuccess(TokenInfo tokenInfo) {
                 progressBar.setVisibility(View.GONE);
-                String x = "";
+                tokenInfoManager.loggedIn(tokenInfo);
 
-                tokenInfo.calculateExpirationTime();
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(intent);
             }
         });
     }
