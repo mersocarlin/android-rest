@@ -18,7 +18,6 @@ import com.mersocarlin.androidrest.R;
 import com.mersocarlin.androidrest.domain.helper.TokenInfoManager;
 import com.mersocarlin.androidrest.domain.model.TokenInfo;
 import com.mersocarlin.androidrest.network.request.AuthRequest;
-import com.mersocarlin.androidrest.network.request.RefreshTokenRequest;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 
@@ -59,28 +58,6 @@ public class LoginActivity extends BaseActivity {
             }
         });
 
-        this.checkIfUserIsLoggedIn();
-    }
-
-    private void checkIfUserIsLoggedIn() {
-        TokenInfo tokenInfo = this.tokenInfoManager.getTokenInfo();
-
-        if (tokenInfo == null || tokenInfo.isEmpty()) {
-            return;
-        }
-
-        RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest(tokenInfo.refresh_token);
-
-        getManager().execute(refreshTokenRequest, new RequestListener<TokenInfo>() {
-            @Override
-            public void onRequestFailure(SpiceException spiceException) { }
-
-            @Override
-            public void onRequestSuccess(TokenInfo tokenInfo) {
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(intent);
-            }
-        });
     }
 
     private void attemptLogin() {
