@@ -15,7 +15,7 @@ public interface AuthApi {
                       @Field("password") String password);
 
     @FormUrlEncoded
-    @POST("/api/refresh_token")
+    @POST("/api/auth")
     TokenInfo refreshToken(@Field("grant_type") String grantType,
                       @Field("refresh_token") String refreshToken);
 }
