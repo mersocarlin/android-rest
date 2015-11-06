@@ -1,10 +1,12 @@
 package com.mersocarlin.androidrest.ui;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.inject.Inject;
@@ -15,6 +17,7 @@ import com.mersocarlin.androidrest.domain.model.Person;
 import com.mersocarlin.androidrest.network.request.CourseRequest;
 import com.mersocarlin.androidrest.network.request.PersonRequest;
 import com.mersocarlin.androidrest.network.response.PersonResponse;
+import com.mersocarlin.androidrest.ui.adapter.PersonAdapter;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 
@@ -30,33 +33,49 @@ public class MainActivity extends BaseActivity {
     private PersonRepository personRepository;
 
     @InjectView(R.id.txtSearch) private EditText txtSearch;
-    @InjectView(R.id.txtResponse) private TextView txtResponse;
+    @InjectView(R.id.listViewPersons) private ListView listViewPersons;
+
+    private PersonAdapter personAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final CourseRequest courseRequest = new CourseRequest();
+//        final CourseRequest courseRequest = new CourseRequest();
+//
+//        getManager().execute(courseRequest, new RequestListener<Course.List>() {
+//            @Override
+//            public void onRequestFailure(SpiceException spiceException) { }
+//
+//            @Override
+//            public void onRequestSuccess(Course.List courses) {
+//                String x = "";
+//            }
+//        });
+//
+//        Person person = new Person();
+//        person.id = 0;
+//        person.name = "TEST PERSON";
+//        person.email = "test@test.com";
+//        person.homePhone = "0123456789";
+//        person.mobilePhone = "9876543210";
+//        person.workPhone = "0000000000";
 
-        getManager().execute(courseRequest, new RequestListener<Course.List>() {
-            @Override
-            public void onRequestFailure(SpiceException spiceException) { }
+        //this.personRepository.save(person);
 
-            @Override
-            public void onRequestSuccess(Course.List courses) {
-                String x = "";
+        this.txtSearch.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    performSearch();
+                    return true;
+                }
+
+                return false;
             }
         });
 
-        Person person = new Person();
-        person.id = 0;
-        person.name = "TEST PERSON";
-        person.email = "test@test.com";
-        person.homePhone = "0123456789";
-        person.mobilePhone = "9876543210";
-        person.workPhone = "0000000000";
-
-        //this.personRepository.save(person);
+        this.personAdapter = new PersonAdapter(this);
+        this.listViewPersons.setAdapter(this.personAdapter);
     }
 
     @Override
@@ -77,15 +96,13 @@ public class MainActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onBtnSearchClick(View view) {
+    private void performSearch() {
         List<Person> personList = this.personRepository.get();
 
         String str = "";
         for (Person person : personList) {
             str += person.toString();
         }
-
-        txtResponse.setText(str);
 
         final PersonRequest personRequest = new PersonRequest(this.txtSearch.getText().toString(), -1, -1, 1);
 
@@ -97,14 +114,11 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onRequestSuccess(PersonResponse personResponse) {
-                String str = "";
                 for (Person person : personResponse.data) {
-                    str += person.toString();
-
                     //personRepository.save(person);
                 }
 
-                txtResponse.setText(str);
+                personAdapter.refreshPersons(personResponse.data);
             }
         });
     }
